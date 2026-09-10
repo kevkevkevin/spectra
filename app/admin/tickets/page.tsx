@@ -1,0 +1,17 @@
+import {requireAdmin} from '@/lib/admin';
+import {redirect} from 'next/navigation';
+import AccountHeader from '@/components/account-header';
+import {money,eventDate,orderReference,type TicketOrder} from '@/lib/tickets';
+import OrderRefresh from '@/components/order-refresh';
+import SubmitButton from '@/components/submit-button';
+import {retryTicketEmails} from './actions';
+import {emailConfigured} from '@/lib/ticket-email';
+export const dynamic='force-dynamic';
+export default async function TicketAdmin({searchParams}:{searchParams:Promise<{status?:string;error?:string;emails?:string;page?:string}>}) {
+ const {db,isAdmin}=await requireAdmin();if(!isAdmin)redirect('/account');
+ const params=await searchParams;const status=['pending','approved','rejected'].includes(params.status??'')?params.status!:'pending';
+ const page=Math.max(1,Math.min(10000,Number.parseInt(params.page??'1',10)||1));
+ const {data,error,count}=await db.from('ticket_orders').select('*',{count:'exact'}).eq('status',status).order('created_at',{ascending:status==='pending'}).range((page-1)*30,page*30-1);
+ const {count:waiting}=await db.from('ticket_notifications').select('id',{count:'exact',head:true}).neq('state','sent');
+ return <><AccountHeader/><main className="ticket-shell"><p className="eyebrow">The ticket desk</p><div className="ticket-title-row"><h1>Review the night.</h1><a className="button button-outline" href="/admin/tickets/settings">Events & payment settings</a></div><div className="admin-section-nav"><a href="/admin">Website content</a><a href="/admin/tickets">Ticket requests</a><a href="/admin/voting">Voting</a><a href="/admin/staff">Staff</a><a href="/staff/scan">Scanner</a></div>{!emailConfigured()&&<p className="notice">Email delivery is not configured. Requests and approvals still appear here. Add the server email settings before launch.</p>}{params.error&&<p role="alert">{params.error==='emailsetup'?'Email setup is incomplete.':'The action could not be completed. Try again and check delivery details.'}</p>}{params.emails&&<p role="status">The email retry pass finished. Check delivery status on each order.</p>}<div className="status-toolbar"><nav className="status-tabs" aria-label="Filter requests">{['pending','approved','rejected'].map(tab=><a aria-current={status===tab?'page':undefined} href={`/admin/tickets?status=${tab}`} key={tab}>{tab}</a>)}</nav><OrderRefresh/><form action={retryTicketEmails}><SubmitButton pending="Retrying…">Retry emails ({waiting??0})</SubmitButton></form></div>{error?<p role="alert">Ticket tables are not available. Run 002_ticketing.sql in Supabase first.</p>:!data?.length?<div className="empty-state"><h2>No {status} requests.</h2><p>New submissions will appear here automatically.</p></div>:<div className="order-list">{(data as TicketOrder[]).map(order=><a className="order-card" href={`/admin/tickets/${order.id}`} key={order.id}><div><small>#{orderReference(order.id)} · {order.customer_name}</small><h2>{order.event_title}</h2><p>{eventDate(order.event_starts_at)} · {order.quantity} tickets</p></div><div className="order-card-total"><strong>{money(order.total_minor)}</strong><span>Review request ↗</span></div></a>)}</div>}<div className="pagination">{page>1&&<a href={`/admin/tickets?status=${status}&page=${page-1}`}>← Previous</a>}<span>{count??0} requests · Page {page}</span>{page*30<(count??0)&&<a href={`/admin/tickets?status=${status}&page=${page+1}`}>Next →</a>}</div></main></>;
+}

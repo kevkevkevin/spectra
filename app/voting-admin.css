@@ -1,0 +1,107 @@
+.voting-admin-shell{max-width:1280px}
+.voting-admin-shell .ticket-intro{max-width:760px;margin-bottom:30px}
+.voting-admin-nav{gap:10px;flex-wrap:wrap;padding:0 0 28px;margin-bottom:34px;border-bottom:1px solid var(--line)}
+.voting-admin-nav a{padding:9px 14px;border:1px solid var(--line);border-radius:999px;transition:border-color .2s,background .2s}
+.voting-admin-nav a:hover{border-color:#9d87f5;background:#ffffff08}
+.voting-save-notice{border-color:#65b48d55;background:#65b48d10}
+.voting-error-notice{border-color:#cc747655;background:#cc747610}
+.voting-rule-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:22px;margin:32px 0;padding:22px 25px;border:1px solid #8f71ef55;border-radius:15px;background:linear-gradient(110deg,#663bfa18,#ffffff03)}
+.voting-rule-icon{display:grid;place-items:center;width:50px;height:50px;border:1px solid #ae9bfa66;border-radius:50%;color:var(--primary-light);font:500 13px Outfit,Arial,sans-serif;letter-spacing:2px}
+.voting-rule-card strong{display:block;margin-bottom:5px;font:400 25px 'Cormorant Garamond',Georgia,serif;color:var(--cream)}
+.voting-rule-card p{margin:0;max-width:670px;color:var(--muted);font-size:12px;line-height:1.7}
+.voting-rule-card dl{display:flex;gap:12px;margin:0}
+.voting-rule-card dl>div{min-width:85px;padding:10px 14px;border-left:1px solid var(--line)}
+.voting-rule-card dt{text-transform:uppercase;letter-spacing:1px;font-size:9px;color:var(--muted)}
+.voting-rule-card dd{margin:4px 0 0;font:400 27px 'Cormorant Garamond',Georgia,serif;color:var(--primary-light)}
+.voting-campaign-card{padding:0;overflow:hidden;margin-top:28px;background:linear-gradient(145deg,#15111e,#0d0b13 58%)}
+.voting-campaign-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:30px;padding:32px 34px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 100% 0,#663bfa24,transparent 44%)}
+.voting-campaign-heading .eyebrow{margin:0 0 12px;font-size:9px}
+.voting-campaign-heading h2{font-size:clamp(38px,4vw,55px);letter-spacing:-1px;margin:0 0 9px}
+.voting-campaign-heading>div>p:last-child{margin:0;color:var(--muted);font-size:12px}
+.voting-campaign-status{display:flex;align-items:center;gap:22px;flex-shrink:0}
+.voting-campaign-status>div:first-child{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;max-width:240px}
+.voting-campaign-tally{min-width:105px;padding-left:20px;border-left:1px solid var(--line);text-align:right}
+.voting-campaign-tally strong{display:block;font:400 37px/1 'Cormorant Garamond',Georgia,serif;color:var(--primary-light)}
+.voting-campaign-tally span{display:block;margin-top:7px;text-transform:uppercase;letter-spacing:1px;font-size:8px;color:var(--muted)}
+.voting-campaign-form{padding:32px 34px;border-bottom:1px solid var(--line)}
+.voting-form-grid,.voting-contestant-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+.voting-wide-field{grid-column:1/-1}
+.voting-campaign-card label{min-width:0}
+.voting-campaign-card label>small,.voting-switches small,.voting-contestant-actions small{display:block;color:var(--muted);font-size:10px;letter-spacing:0;line-height:1.55}
+.voting-campaign-card select{width:100%;min-width:0;padding:12px 14px;border:1px solid #ffffff26;border-radius:8px;background:#09070e;color:var(--cream);font:400 14px Outfit,Arial,sans-serif;letter-spacing:0}
+.voting-campaign-card select option{background:#15111e;color:var(--cream)}
+.voting-hero-preview{position:relative;overflow:hidden;margin:0 0 28px;border:1px solid var(--line);border-radius:12px;background:#08060c}
+.voting-hero-preview img{width:100%;height:230px;object-fit:cover;object-position:center 30%;filter:saturate(.85)}
+.voting-hero-preview figcaption{position:absolute;left:12px;bottom:12px;padding:7px 10px;border-radius:999px;background:#090711cc;text-transform:uppercase;letter-spacing:1px;font-size:8px;color:#ddd5ee}
+.voting-switches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:4px 0 25px;padding:0;border:0}
+.voting-switches legend{width:100%;margin-bottom:12px;text-transform:uppercase;letter-spacing:1.5px;font-size:9px;color:var(--muted)}
+.voting-switches .check,.voting-contestant-actions .check{display:flex;align-items:flex-start;gap:11px;margin:0;padding:16px;border:1px solid var(--line);border-radius:10px;background:#ffffff03;color:var(--cream);letter-spacing:0}
+.voting-switches .check input,.voting-contestant-actions .check input{margin-top:4px;accent-color:var(--primary);flex-shrink:0}
+.voting-switches .check span,.voting-contestant-actions .check span{display:block}
+.voting-switches strong,.voting-contestant-actions strong{display:block;margin-bottom:4px;font:500 12px Outfit,Arial,sans-serif;color:var(--cream)}
+.voting-campaign-form>.button{min-width:190px}
+.voting-form-note{display:inline-block;margin:0 0 0 14px;color:#e1c584!important;font-size:11px}
+.voting-lineup-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:25px;padding:42px 34px 24px}
+.voting-lineup-heading .eyebrow{margin:0 0 10px;font-size:9px}
+.voting-lineup-heading h2{font-size:44px;margin:0}
+.voting-lineup-heading>p{margin:0 0 5px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.voting-contestant-list{display:grid;gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.voting-contestant-editor{display:grid;grid-template-columns:230px minmax(0,1fr);gap:0;background:#100d17}
+.voting-contestant-editor.is-inactive{background:#0c0a10}
+.voting-contestant-editor.is-inactive .voting-contestant-visual img{filter:grayscale(.75);opacity:.6}
+.voting-contestant-visual{position:relative;min-height:310px;overflow:hidden;background:linear-gradient(145deg,#211638,#09070d)}
+.voting-contestant-visual img{width:100%;height:100%;min-height:310px;object-fit:cover;object-position:center top}
+.voting-image-placeholder{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 25%,#6845a866,transparent 48%)}
+.voting-image-placeholder span{font:italic 82px 'Cormorant Garamond',Georgia,serif;color:#c9bbff38}
+.voting-number-chip{position:absolute;top:15px;left:15px;padding:8px 10px;border:1px solid #ffffff33;border-radius:999px;background:#090711d9;color:#fff;font-size:10px;letter-spacing:1px}
+.voting-contestant-form{padding:27px 30px}
+.voting-editor-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}
+.voting-editor-heading .eyebrow{margin:0 0 7px;font-size:8px}
+.voting-editor-heading h3{margin:0;font-size:31px;letter-spacing:-.4px}
+.voting-person-tally{min-width:95px;text-align:right}
+.voting-person-tally strong{display:block;font:400 28px/1 'Cormorant Garamond',Georgia,serif;color:var(--primary-light)}
+.voting-person-tally span{display:block;margin-top:6px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.8px}
+.voting-contestant-fields label{margin-bottom:16px}
+.voting-contestant-fields input,.voting-contestant-fields textarea{padding:10px 12px;font-size:13px}
+.voting-contestant-actions{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:3px}
+.voting-contestant-actions .check{flex:1;padding:12px 14px}
+.voting-contestant-actions .button{min-width:150px;flex-shrink:0}
+.voting-new-campaign{border-style:dashed}
+
+@media(max-width:900px){
+ .voting-campaign-heading{flex-direction:column}
+ .voting-campaign-status{width:100%;justify-content:space-between}
+ .voting-campaign-status>div:first-child{justify-content:flex-start;max-width:none}
+ .voting-contestant-editor{grid-template-columns:190px minmax(0,1fr)}
+ .voting-contestant-visual,.voting-contestant-visual img{min-height:300px}
+}
+
+@media(max-width:700px){
+ .voting-rule-card{grid-template-columns:auto 1fr}
+ .voting-rule-card dl{grid-column:1/-1;padding-left:72px}
+ .voting-campaign-heading,.voting-campaign-form{padding:26px 22px}
+ .voting-lineup-heading{padding:35px 22px 22px}
+ .voting-form-grid,.voting-contestant-fields,.voting-switches{grid-template-columns:1fr}
+ .voting-wide-field{grid-column:auto}
+ .voting-contestant-editor{grid-template-columns:1fr}
+ .voting-contestant-visual{width:min(280px,100%);min-height:345px;margin:25px auto 0;border-radius:12px}
+ .voting-contestant-visual img{min-height:345px}
+ .voting-contestant-form{padding:24px 22px 30px}
+}
+
+@media(max-width:500px){
+ .voting-admin-nav{gap:7px}
+ .voting-admin-nav a{padding:8px 11px;font-size:11px}
+ .voting-rule-card{grid-template-columns:1fr;padding:20px}
+ .voting-rule-icon{width:44px;height:44px}
+ .voting-rule-card dl{grid-column:auto;padding-left:0;width:100%}
+ .voting-rule-card dl>div{flex:1}
+ .voting-campaign-status{align-items:flex-start;flex-direction:column}
+ .voting-campaign-tally{padding:14px 0 0;border-left:0;border-top:1px solid var(--line);text-align:left;width:100%}
+ .voting-lineup-heading{align-items:flex-start;flex-direction:column;gap:10px}
+ .voting-editor-heading{align-items:flex-end}
+ .voting-contestant-actions{align-items:stretch;flex-direction:column}
+ .voting-contestant-actions .button{width:100%}
+ .voting-campaign-form>.button{width:100%}
+ .voting-form-note{display:block;margin:12px 0 0}
+}
