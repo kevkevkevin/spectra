@@ -2,7 +2,7 @@ import { createClient,isConfigured } from './supabase/server';
 import { redirect } from 'next/navigation';
 export function safeNext(value:unknown) {
  const path=String(value??'');
- return /^\/(account|tickets|contest|admin|staff)(\/[^?#\\]*)?$/.test(path) ? path : '/account';
+ return /^\/(account|tickets|contest|admin|staff|judge)(\/[^?#\\]*)?$/.test(path) ? path : '/account';
 }
 export function siteUrl() {
  const value=process.env.SITE_URL || (process.env.NODE_ENV==='production'?'':'http://localhost:3000');

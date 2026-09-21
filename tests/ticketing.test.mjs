@@ -12,6 +12,7 @@ const users = {
   admin: '20000000-0000-4000-8000-000000000003',
   unconfirmed: '20000000-0000-4000-8000-000000000004',
   staff: '20000000-0000-4000-8000-000000000005',
+  judge: '20000000-0000-4000-8000-000000000006',
 };
 const eventId = '10000000-0000-4000-8000-000000000001';
 const contestEventId = '10000000-0000-4000-8000-000000000002';
@@ -59,6 +60,19 @@ const castVote = async (user = 'alice', contestant = contenderId, campaign = cam
   (await asUser(user, 'select * from public.cast_contest_vote($1,$2)', [campaign, contestant])).rows[0];
 const voteStatus = async (user = 'alice', campaign = campaignId) =>
   (await asUser(user, 'select * from public.contest_vote_status($1)', [campaign])).rows[0];
+const scoringCriteria = async (campaign = campaignId) =>
+  (await asUser('admin', 'select id,category,name,weight,position from public.contest_scoring_criteria where campaign_id=$1 order by position', [campaign])).rows;
+const assignJudge = (user = 'judge', assigned = true, actor = 'admin') =>
+  asUser(actor, 'select public.set_contest_judge($1,$2)', [users[user], assigned]);
+async function submitScores(user = 'judge', values = Array(7).fill(8), contestant = contenderId, campaign = campaignId) {
+  const criteria = await scoringCriteria(campaign);
+  const scores = criteria.map((item, index) => ({ criterion_id: item.id, score: values[index] }));
+  return asUser(user, 'select public.submit_contest_scorecard($1,$2,$3::jsonb) as id',
+    [campaign, contestant, JSON.stringify(scores)]);
+}
+const judgeLeaderboard = (role = 'admin', campaign = campaignId) =>
+  asRole(role === 'anon' ? 'anon' : 'authenticated', role === 'anon' ? null : users[role],
+    'select * from public.contest_judge_leaderboard($1)', [campaign]);
 async function approveTickets(user = 'alice', quantity = 1, event = contestEventId) {
   const order = await submit(user, { quantity, eventId: event });
   await review(order.id);
@@ -96,7 +110,7 @@ before(async () => {
       select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1)-1]
     $$;
   `);
-  for (const name of ['001_content.sql', '002_ticketing.sql', '003_event_management.sql', '004_staff_scanning.sql', '005_ticket_voting.sql', '006_deployment_hardening.sql']) {
+  for (const name of ['001_content.sql', '002_ticketing.sql', '003_event_management.sql', '004_staff_scanning.sql', '005_ticket_voting.sql', '006_deployment_hardening.sql', '007_contest_tabulation.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   initialEvents = (await db.query('select active, starts_at from public.ticket_events')).rows;
@@ -105,6 +119,17 @@ before(async () => {
 
 beforeEach(async () => {
   await db.exec(`
+    truncate table public.contest_scores, public.contest_scorecards;
+    delete from public.contest_judges;
+    update public.contest_scoring_settings set scoring_open=false,results_visible=false;
+    update public.contest_scoring_criteria set
+      name=case position
+       when 1 then 'Vocal technique' when 2 then 'Pitch and control' when 3 then 'Tone and expression'
+       when 4 then 'Confidence and charisma' when 5 then 'Movement and presentation'
+       when 6 then 'Emotional connection' else 'Audience engagement' end,
+      weight=case position when 1 then 20 when 2 then 15 when 3 then 15
+       when 4 then 15 when 5 then 15 else 10 end
+      where campaign_id='${campaignId}';
     truncate table public.ticket_votes;
     delete from public.contestants where campaign_id<>'${campaignId}' or number not between 1 and 21;
     delete from public.voting_campaigns where id<>'${campaignId}';
@@ -846,6 +871,149 @@ describe('ticket-backed contest voting', () => {
       [{ title: 'Production title', results_visible: false }]);
     assert.equal(scalar(await db.query('select name from public.contestants where id=$1', [contenderId]), 'name'), 'Finalist One');
     assert.equal(scalar(await db.query('select count(*) from public.contestants where campaign_id=$1', [campaignId])), 21);
+  });
+});
+
+describe('weighted judge tabulation', () => {
+  test('seeds seven criteria with 50/30/20 category totals for existing and new campaigns', async () => {
+    const criteria = await scoringCriteria();
+    assert.deepEqual(criteria.map(item => item.category), ['voice','voice','voice','stage','stage','audience','audience']);
+    assert.deepEqual(criteria.map(item => item.weight), [20,15,15,15,15,10,10]);
+    const newCampaign = randomUUID();
+    await asUser('admin', "insert into public.voting_campaigns(id,event_id,title) values ($1,$2,'Fresh campaign')", [newCampaign,eventId]);
+    assert.equal((await scoringCriteria(newCampaign)).length, 7);
+    assert.deepEqual((await asUser('admin', 'select scoring_open,results_visible from public.contest_scoring_settings where campaign_id=$1', [newCampaign])).rows,
+      [{scoring_open:false,results_visible:false}]);
+  });
+
+  test('only admins can assign judges or open scoring, and direct score writes are denied', async () => {
+    await assert.rejects(() => assignJudge('judge', true, 'alice'), /Admin access required/);
+    await assignJudge();
+    assert.equal(scalar(await asUser('judge', 'select public.is_contest_judge() as allowed'), 'allowed'), true);
+    assert.equal(scalar(await asUser('alice', 'select public.is_contest_judge() as allowed'), 'allowed'), false);
+    await denied(() => asRole('anon', null, 'select public.is_contest_judge()'));
+    assert.equal((await asUser('judge', "update public.contest_scoring_settings set scoring_open=true where campaign_id=$1 returning campaign_id", [campaignId])).rows.length,0);
+    await denied(() => asUser('judge',
+      'insert into public.contest_scorecards(campaign_id,contestant_id,judge_id) values ($1,$2,$3)',
+      [campaignId,contenderId,users.judge]));
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    assert.equal(scalar(await asUser('judge', 'select scoring_open from public.contest_scoring_settings where campaign_id=$1', [campaignId]), 'scoring_open'), true);
+    await assignJudge('judge', false);
+    assert.equal(scalar(await asUser('judge', 'select public.is_contest_judge() as allowed'), 'allowed'), false);
+  });
+
+  test('enforces custom subweights and locks the rubric after the first scorecard', async () => {
+    const criteria = await scoringCriteria();
+    const custom = criteria.map((item,index) => ({
+      id:item.id,name:index===0?'Technique and range':item.name,
+      weight:[30,10,10,20,10,12,8][index],
+    }));
+    await asUser('admin', 'select public.save_contest_rubric($1,$2::jsonb)', [campaignId,JSON.stringify(custom)]);
+    assert.deepEqual((await scoringCriteria()).map(item => item.weight), [30,10,10,20,10,12,8]);
+    assert.equal((await scoringCriteria())[0].name, 'Technique and range');
+    const bad=custom.map((item,index)=>({...item,weight:index===0?29:item.weight}));
+    await assert.rejects(() => asUser('admin','select public.save_contest_rubric($1,$2::jsonb)',[campaignId,JSON.stringify(bad)]), /Category weights must total/);
+    assert.deepEqual((await scoringCriteria()).map(item => item.weight), [30,10,10,20,10,12,8]);
+    await assignJudge();
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    await submitScores();
+    await assert.rejects(() => asUser('admin','select public.save_contest_rubric($1,$2::jsonb)',[campaignId,JSON.stringify(custom)]), /Rubric is locked/);
+    await assert.rejects(() => asUser('judge','select public.save_contest_rubric($1,$2::jsonb)',[campaignId,JSON.stringify(custom)]), /Admin access required/);
+  });
+
+  test('calculates weighted category totals, averages judges, and ranks by total', async () => {
+    await assignJudge();
+    await assignJudge('alice');
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    await submitScores('judge',[8,9,10,7,8,9,10]);
+    await submitScores('alice',Array(7).fill(10));
+    await submitScores('judge',Array(7).fill(9),'31000000-0000-4000-8000-000000000002');
+    const rows=(await judgeLeaderboard()).rows;
+    const first=rows.find(item=>item.contestant_id===contenderId);
+    assert.deepEqual({
+      judges:first.judge_count,voice:first.voice_points,stage:first.stage_points,
+      audience:first.audience_points,total:first.total_points,rank:first.rank_position,
+    },{judges:2,voice:'47.25',stage:'26.25',audience:'19.50',total:'93.00',rank:1});
+    const second=rows.find(item=>item.number===2);
+    assert.equal(second.total_points,'90.00');
+    assert.equal(second.rank_position,2);
+    assert.equal(rows.find(item=>item.number===3).total_points,null);
+    assert.equal(rows.find(item=>item.number===3).rank_position,null);
+  });
+
+  test('rejects incomplete, duplicated, out-of-range, and cross-campaign scorecards', async () => {
+    await assignJudge();
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    const criteria=await scoringCriteria();
+    const complete=criteria.map(item=>({criterion_id:item.id,score:8.25}));
+    const send=payload=>asUser('judge','select public.submit_contest_scorecard($1,$2,$3::jsonb)',
+      [campaignId,contenderId,JSON.stringify(payload)]);
+    await assert.rejects(() => send(complete.slice(1)), /Score every criterion/);
+    await assert.rejects(() => send([...complete.slice(0,6),complete[0]]), /Invalid criterion/);
+    await assert.rejects(() => send(complete.map((item,index)=>index===0?{...item,score:10.01}:item)), /Scores must be from 0 to 10/);
+    await assert.rejects(() => send(complete.map((item,index)=>index===0?{...item,score:8.123}:item)), /up to two decimals/);
+    await assert.rejects(() => asUser('alice','select public.submit_contest_scorecard($1,$2,$3::jsonb)',
+      [campaignId,contenderId,JSON.stringify(complete)]), /Judge access required/);
+    await send(complete);
+    assert.equal((await judgeLeaderboard()).rows.find(item=>item.number===1).total_points,'82.50');
+  });
+
+  test('uses voice, then stage, then impact to resolve an equal total', async () => {
+    await assignJudge();
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    await submitScores('judge',[8,10,10,8,8,10,10],contenderId);
+    await submitScores('judge',[9,9,9,10,10,7.5,7.5],'31000000-0000-4000-8000-000000000002');
+    const ranked=(await judgeLeaderboard()).rows.filter(item=>item.total_points!==null);
+    assert.equal(ranked[0].total_points,'90.00');
+    assert.equal(ranked[1].total_points,'90.00');
+    assert.equal(ranked[0].number,1);
+    assert.equal(ranked[0].voice_points,'46.00');
+    assert.equal(ranked[1].voice_points,'45.00');
+    assert.equal(ranked[0].rank_position,1);
+    assert.equal(ranked[1].rank_position,2);
+  });
+
+  test('keeps private scorecards isolated and results hidden until publication', async () => {
+    await assignJudge();
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    await submitScores();
+    assert.equal((await asUser('judge','select count(*) from public.contest_scorecards')).rows[0].count,1);
+    assert.equal((await asUser('alice','select count(*) from public.contest_scorecards')).rows[0].count,0);
+    assert.equal((await asUser('alice','select count(*) from public.contest_scores')).rows[0].count,0);
+    assert.equal((await judgeLeaderboard('anon')).rows.length,0);
+    await asUser('admin','update public.contest_scoring_settings set results_visible=true where campaign_id=$1',[campaignId]);
+    const publicRows=(await judgeLeaderboard('anon')).rows;
+    assert.equal(publicRows.length,21);
+    assert.equal(publicRows.find(item=>item.number===1).total_points,'80.00');
+    assert.ok(!Object.hasOwn(publicRows[0],'judge_id'));
+    await asUser('admin','update public.contest_scoring_settings set results_visible=false where campaign_id=$1',[campaignId]);
+    assert.equal((await judgeLeaderboard('anon')).rows.length,0);
+  });
+
+  test('revisions replace the same judge card and closing scoring prevents edits', async () => {
+    await assignJudge();
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    const first=scalar(await submitScores(), 'id');
+    const second=scalar(await submitScores('judge',Array(7).fill(10)), 'id');
+    assert.equal(first,second);
+    assert.equal(scalar(await db.query('select count(*) from public.contest_scorecards')),1);
+    assert.equal(scalar(await db.query('select count(*) from public.contest_scores')),7);
+    assert.equal((await judgeLeaderboard()).rows.find(item=>item.number===1).total_points,'100.00');
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=false where campaign_id=$1', [campaignId]);
+    await assert.rejects(() => submitScores(), /Scoring is closed/);
+    await assignJudge('judge',false);
+    await assert.rejects(() => submitScores(), /Judge access required/);
+  });
+
+  test('rerunning migration preserves customized rubric, roles, and saved scorecards', async () => {
+    await assignJudge();
+    await asUser('admin', 'update public.contest_scoring_settings set scoring_open=true where campaign_id=$1', [campaignId]);
+    await submitScores();
+    const before=await scoringCriteria();
+    await db.exec(await readFile(new URL('../supabase/migrations/007_contest_tabulation.sql',import.meta.url),'utf8'));
+    assert.deepEqual(await scoringCriteria(),before);
+    assert.equal(scalar(await db.query('select count(*) from public.contest_scorecards')),1);
+    assert.equal(scalar(await db.query('select count(*) from public.contest_judges')),1);
   });
 });
 

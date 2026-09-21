@@ -1,6 +1,6 @@
 # Spectra ticketing setup
 
-The implementation is ready locally. The live project already has the ticketing tables. Apply `003_event_management.sql`, `004_staff_scanning.sql`, `005_ticket_voting.sql`, and `006_deployment_hardening.sql` in that order to finish event settings, open existing sales, enable staff scanning, activate the contest vote, and use deployment-safe upload limits. Ticket notification emails still require the server credentials below. No live database migration or test email was sent during this update.
+The implementation is ready locally. The live project already has the ticketing tables. Apply `003_event_management.sql`, `004_staff_scanning.sql`, `005_ticket_voting.sql`, `006_deployment_hardening.sql`, and `007_contest_tabulation.sql` in that order to finish event settings, open existing sales, enable staff scanning, activate the contest vote, use deployment-safe upload limits, and enable judge scoring. Ticket notification emails still require the server credentials below. No live database migration or test email was sent during this update.
 
 ## 1. Install the database
 
@@ -12,7 +12,9 @@ Then run `supabase/migrations/004_staff_scanning.sql`. It adds the admin-managed
 
 Then run `supabase/migrations/005_ticket_voting.sql`. It creates voting campaigns, contestant profiles, immutable ticket votes, private voter records, and public aggregate tallies. It also seeds the Spectra’s Next Singing Idol campaign and 21 editable contender profiles.
 
-Finally, run `supabase/migrations/006_deployment_hardening.sql`. It aligns the existing receipt and banner buckets with the app's 4 MB upload limit so uploads fit within Vercel's request-body ceiling. All four upgrade migrations are transactional and safe to rerun; reruns preserve votes and admin edits.
+Next, run `supabase/migrations/006_deployment_hardening.sql`. It aligns the existing receipt and banner buckets with the app's 4 MB upload limit so uploads fit within Vercel's request-body ceiling.
+
+Finally, run `supabase/migrations/007_contest_tabulation.sql`. It creates judge roles, seven editable scoring criteria per campaign, private scorecards, a weighted leaderboard function, and separate controls for scoring and public visibility. The 003–007 upgrades are transactional and safe to rerun; reruns preserve votes, scores, and admin edits.
 
 If `001_content.sql` already ran, do not run it again. The new migration is transactional. If it fails, resolve the error before retrying; do not remove the access policies to make it pass.
 
@@ -100,6 +102,14 @@ Open `/admin/voting` as an admin after migration 005 is applied. The seeded camp
 The public ballot is `/contest`. A confirmed, signed-in customer receives one final vote for each issued ticket from an approved order for the campaign’s linked event. A quantity of three therefore provides three votes. The database spends a different issued ticket for each vote and rejects repeat or simultaneous attempts to reuse one. Entry and food scans do not affect voting eligibility. Pending and rejected orders cannot vote.
 
 Voting records cannot be edited or deleted through the app. Once the first vote is cast, the campaign cannot be moved to another event and voted contenders cannot be moved to another campaign. Create a new campaign for a later voting round. When public results are hidden, visitors see the lineup without totals or percentages while admins can still monitor the tally in `/admin/voting`.
+
+## 7. Judge tabulation
+
+After migration 007, open `/admin/tabulation` as an admin. Registered users can be assigned the **Judge** role there. Judges sign in and use `/judge` to submit one complete scorecard per contestant. Their access does not include ticket approvals, staff assignment, private receipts, or campaign editing.
+
+The default rubric has seven subcriteria: three for **Voice quality (50%)**, two for **Stage presence (30%)**, and two for **Audience impact (20%)**. Admins can rename them and set custom whole-percentage subweights while preserving each category total. The rubric locks as soon as the first scorecard is submitted. Each judge rates each subcriterion from 0 to 10, with up to two decimal places. A subcriterion contributes `rating ÷ 10 × subweight` points; the seven contributions total at most 100. Each contestant's category and total scores are the average of completed judge scorecards. Ties are ordered by voice, then stage, then impact. Partial judging is provisional and the leaderboard shows the number of judges who have scored each contestant.
+
+Use **Allow judges to score** to open or close submissions. Judges can revise their own scorecards while scoring is open; a revision replaces their previous scores without adding another judge to the average. The admin leaderboard refreshes every five seconds. **Show judge results publicly** controls the independent `/contest/results` page, which also refreshes every five seconds. Public judge results are hidden by default. Ticket-backed audience votes on `/contest` remain a separate tally; Audience Impact here is scored by judges.
 
 Signed receipt URLs expire after 5 minutes for customers and 10 minutes for admins. Refresh the page to generate a new link. Customers cannot overwrite or delete a receipt once it is attached to an order.
 

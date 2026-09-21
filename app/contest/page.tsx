@@ -77,7 +77,7 @@ export default async function ContestPage(){
 
    <ContestVote campaignId={setupReady?campaign?.id??null:null} contestants={roster} signedIn={signedIn} ticketStatus={ticketStatus} setupReady={setupReady} votingOpen={campaignIsOpen(campaign)}/>
 
-   <section className="contest-room-cta" aria-labelledby="room-title"><p className="eyebrow">Live at Bora Cafe &amp; Restaurant · 3PM</p><h2 id="room-title">Be in the <em>room.</em></h2><p>Come watch the elimination nights, then use your approved ticket to vote for the voice you want to keep on stage.</p><div className="button-row"><a className="button contest-gold-button" href="/tickets">Get tickets <span aria-hidden="true">↗</span></a><a className="button button-outline" href={WHATSAPP} target="_blank" rel="noopener noreferrer">Book a table <span aria-hidden="true">↗</span></a></div></section>
+   <section className="contest-room-cta" aria-labelledby="room-title"><p className="eyebrow">Live at Bora Cafe &amp; Restaurant · 3PM</p><h2 id="room-title">Be in the <em>room.</em></h2><p>Come watch the elimination nights, then use your approved ticket to vote for the voice you want to keep on stage.</p><div className="button-row"><a className="button contest-gold-button" href="/tickets">Get tickets <span aria-hidden="true">↗</span></a><a className="button button-outline" href="/contest/results">Judge results <span aria-hidden="true">↗</span></a><a className="button button-outline" href={WHATSAPP} target="_blank" rel="noopener noreferrer">Book a table <span aria-hidden="true">↗</span></a></div></section>
   </main>
   <SiteFooter/>
  </div>;

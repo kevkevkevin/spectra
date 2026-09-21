@@ -10,7 +10,7 @@ The primary brand color is violet-blue (`#663BFA`), defined by `--primary` in `a
 
 Reference images are stored locally in `public/assets/reference`. Default roster, services and news are in `lib/site-content.ts`, captured from the reference on 7 September 2026. Published Supabase rows replace defaults within their category. The homepage story, event promotion and contact details are maintained in `components/landing.tsx`. This redesign requires no database migration.
 
-The contest now lives at `/contest` with a Spectra-styled Top 21 page, ticket-backed ballot, final-vote confirmation, and optional live leaderboard. Tickets use the local `/tickets`, `/signup`, `/account`, and `/admin/tickets` workflow. See [TICKET_SETUP.md](TICKET_SETUP.md) for the required database migrations, email configuration, event setup, and voting controls. The contact form opens WhatsApp with a prepared enquiry for the visitor to review and send. It does not submit or store enquiries in Supabase. Local `/login` and `/admin` continue to use Supabase.
+The contest now lives at `/contest` with a Spectra-styled Top 21 page, ticket-backed ballot, final-vote confirmation, and optional live leaderboard. Judges use separate accounts at `/judge` to score seven weighted criteria; admins set custom subweights and follow the live judge leaderboard at `/admin/tabulation`. The optional public judge leaderboard is at `/contest/results`. Tickets use the local `/tickets`, `/signup`, `/account`, and `/admin/tickets` workflow. See [TICKET_SETUP.md](TICKET_SETUP.md) for the required database migrations, email configuration, event setup, voting, and judge scoring controls. The contact form opens WhatsApp with a prepared enquiry for the visitor to review and send. It does not submit or store enquiries in Supabase. Local `/login` and `/admin` continue to use Supabase.
 
 Verify the dated September 2026 event promotion before future publication. The reference identifies one performer only as “Featured Vocalist”; that name has been preserved.
 
@@ -36,7 +36,7 @@ Open http://localhost:3000. The landing page works without credentials. `/login`
 insert into public.admins (user_id) values ('REPLACE_WITH_USER_UUID');
 ```
 
-5. Apply the ticket migrations in order through `006_deployment_hardening.sql`, restart the app, and sign in. Admins manage content, tickets, events, payments, voting, and Staff roles. Assigned Staff can use only the entry and food scanner.
+5. Apply the ticket migrations in order through `007_contest_tabulation.sql`, restart the app, and sign in. Admins manage content, tickets, events, payments, voting, Staff roles, and judge tabulation. Assigned Staff can use only the entry and food scanner; assigned judges can score contestants.
 
 Public customer registration is available at `/signup`. `/account` shows ticket requests, approved QR tickets, entry check-in, and food redemption. Customers vote at `/contest`, where each approved issued ticket for the linked event can be used once. Admins use `/admin/tickets` for receipt review, `/admin/voting` for campaign and contestant management, and `/admin/staff` to assign scanner access. Staff use `/staff/scan`. Password changes/account recovery can currently be managed by the project owner in Supabase.
 
@@ -58,7 +58,7 @@ Deploy to a Next.js-compatible host such as Vercel. This is a server app, not a 
 
 1. Import the GitHub repository into the host and use the standard Next.js build command.
 2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SITE_URL`. `SITE_URL` must be the final HTTPS origin rather than localhost.
-3. Apply migrations `001_content.sql` through `006_deployment_hardening.sql` in order for a fresh database. Existing installations should apply only the migrations they have not run.
+3. Apply migrations `001_content.sql` through `007_contest_tabulation.sql` in order for a fresh database. Existing installations should apply only the migrations they have not run.
 4. Set the Supabase Auth Site URL to the deployed origin and allow `<SITE_URL>/auth/confirm` as a redirect URL.
 5. For email notifications, also set `ADMIN_NOTIFICATION_EMAIL`, `EMAIL_FROM`, `RESEND_API_KEY`, and `SUPABASE_SECRET_KEY`. Ticketing remains usable without email delivery and shows that configuration state in the admin desk.
 6. Run the end-to-end launch check in `TICKET_SETUP.md` before accepting real payments.

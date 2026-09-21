@@ -185,6 +185,7 @@ export default async function VotingAdmin({searchParams}:{searchParams:Promise<P
    <a href="/admin/tickets">Ticket desk</a>
    <a href="/admin/staff">Staff</a>
    <a href="/admin/tickets/settings">Events</a>
+   <a href="/admin/tabulation">Judge tabulation</a>
    <a href="/contest" target="_blank" rel="noopener noreferrer">Contest public ↗</a>
   </nav>
   <p className="eyebrow">Contest control room</p>

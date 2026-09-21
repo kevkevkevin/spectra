@@ -1,0 +1,52 @@
+.tabulation-shell{max-width:1320px}.tabulation-shell>.ticket-intro{max-width:760px}
+.tabulation-shell .admin-section-nav{flex-wrap:wrap}.tabulation-shell .ticket-panel{background:linear-gradient(145deg,#171120,#0d0a13);border-color:#9777c52b}
+.tabulation-shell h2,.judge-person h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500}
+.tabulation-success{border-color:#65b48d77;color:#b7ebcc;background:#65b48d12}
+.tabulation-campaign-tabs{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 32px}
+.tabulation-campaign-tabs a{padding:10px 16px;border-radius:30px;border:1px solid #ffffff26;font-size:12px;color:#c4b9d3}
+.tabulation-campaign-tabs a[aria-current=page]{border-color:#ae82ff;background:#663bfa33;color:white}
+.tabulation-overview{display:flex;justify-content:space-between;align-items:center;gap:30px;margin:30px 0}
+.tabulation-overview h2{font-size:45px;margin:6px 0}.tabulation-overview p:last-child{font-size:13px;color:var(--muted)}
+.tabulation-stat{min-width:150px;text-align:center;padding:15px 20px;border:1px solid #b283f447;border-radius:13px}
+.tabulation-stat strong{display:block;font:500 38px 'Cormorant Garamond',Georgia,serif;color:#ceadff}
+.tabulation-stat span{display:block;color:#a69bb3;font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.tabulation-management-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.tabulation-control-form{display:grid;gap:15px}.ticket-panel label.tabulation-switch{display:flex;flex-direction:row;align-items:start;gap:12px;padding:14px;border:1px solid #ffffff1d;border-radius:10px;margin:0;color:white;letter-spacing:0}
+.tabulation-switch span{display:grid;gap:6px}.tabulation-switch strong{font-size:13px}.tabulation-switch small{font-size:11px;line-height:1.5;color:#a99eb7}
+.tabulation-control-form .button{justify-self:start;margin-top:10px}.tabulation-weight-summary{margin:25px 0}.tabulation-weight-summary>div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid #ffffff1a;font-size:13px}
+.tabulation-weight-summary dt{color:#bfb2ce}.tabulation-weight-summary dd{margin:0;color:#d5b5ff}
+.tabulation-rule-note{font-size:11px!important;line-height:1.7;color:#9e95ab!important}
+.tabulation-rubric,.tabulation-leaderboard-panel,.tabulation-judges{margin:20px 0}.tabulation-section-heading,.tabulation-results-heading{display:flex;justify-content:space-between;align-items:center;gap:18px}
+.tabulation-rubric>p,.tabulation-judges>p{font-size:13px;color:#aaa0b7}
+.tabulation-rubric-group{margin:28px 0;padding:0;border:0}.tabulation-rubric-group legend{width:100%;padding-bottom:12px;border-bottom:1px solid #a078ce40;color:#d6b5ff;font-size:13px;font-weight:600}
+.tabulation-rubric-row{display:grid;grid-template-columns:minmax(0,1fr) 125px;gap:18px;align-items:end;padding-top:15px}
+.tabulation-rubric-row label{margin-bottom:0!important}.tabulation-rubric-row input:disabled{opacity:.6}
+.tabulation-results-heading h2{margin:6px 0 20px}.tabulation-live-dot{color:#a9dfc1;font-size:11px;white-space:nowrap}.tabulation-live-dot:before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#75d8a9;margin-right:8px;box-shadow:0 0 12px #75d8a9}
+.tabulation-table-wrap{width:100%;overflow-x:auto}.tabulation-table{width:100%;border-collapse:collapse;white-space:nowrap;text-align:left;font-size:12px}
+.tabulation-table th{padding:14px 12px;border-bottom:1px solid #aa75e859;color:#b39acb;font-size:10px;text-transform:uppercase;letter-spacing:.7px}
+.tabulation-table td{padding:16px 12px;border-bottom:1px solid #ffffff16;color:#ddd3e8}
+.tabulation-table tr:last-child td{border-bottom:0}.tabulation-contestant-number{display:inline-flex;width:30px;color:#b98bf5;font-size:10px}
+.tabulation-table .tabulation-total-cell{color:#e7c083;font-size:18px;font-weight:600}.tabulation-results>.tabulation-rule-note{margin-top:24px}
+.tabulation-judges .staff-search{margin:24px 0}.tabulation-judges .staff-user-row{border-color:#ffffff1c}
+.judge-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.judge-person{display:flex;align-items:center;gap:16px;padding:13px;border:1px solid #ffffff26;border-radius:15px;background:#15101d}
+.judge-person img,.judge-person-placeholder{width:68px;height:84px;border-radius:9px;object-fit:cover}
+.judge-person-placeholder{display:grid;place-items:center;background:#291944;color:#cdaaef}
+.judge-person>div{flex:1;min-width:0}.judge-person small{color:#bc89f5;font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.judge-person h3{font-size:27px;margin:4px 0}.judge-person span:not(.judge-person-placeholder){font-size:11px}.judge-done{color:#9fdeb8}.judge-pending{color:#aaa0b5}
+.judge-person .button{font-size:11px;white-space:nowrap;padding:10px 14px}
+.judge-detail>.text-link{display:inline-block;margin-bottom:36px}.judge-detail-heading{display:flex;align-items:center;gap:25px;margin:28px 0 38px}
+.judge-detail-heading img{width:100px;height:125px;object-fit:cover;border-radius:12px}.judge-detail-heading h1{font:500 70px/1 'Cormorant Garamond',Georgia,serif;margin:0 0 10px}
+.judge-detail-heading p{color:#aaa0b5;font-size:13px}
+.judge-score-form{max-width:830px}.judge-category{margin:0 0 22px;padding:20px 24px;border:1px solid #9777c548;border-radius:15px;background:#140f1b}
+.judge-category legend{padding:0 10px;color:#dcc4f2;font-size:16px}.judge-category legend strong{padding-left:12px;color:#bb8efa}
+.judge-criterion-list{display:grid;gap:10px;margin:8px 0 15px}
+.judge-criterion{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:12px 0;border-bottom:1px solid #ffffff12}
+.judge-criterion span{display:grid;gap:4px}.judge-criterion strong{font-size:13px;font-weight:500}.judge-criterion small{font-size:10px;color:#a79aae}
+.judge-criterion input{width:110px;padding:11px 12px;border:1px solid #ab7de358;border-radius:8px;background:#0c0811;color:white;font:500 17px Outfit,Arial,sans-serif;text-align:center}
+.judge-subtotal,.judge-total{display:flex;justify-content:space-between;align-items:center;gap:15px;font-size:12px;color:#aea3bb}
+.judge-subtotal strong{font-size:16px;color:#d4affc}.judge-total{margin:22px 0;padding:20px 24px;border:1px solid #c696ef77;border-radius:15px;background:#5c2f9b22}
+.judge-total strong{font-size:32px;color:#f0d6a1}.judge-total small{font-size:14px;color:#baacc5}.judge-score-form>.button{margin-top:22px}
+.public-tabulation>.ticket-panel{margin-top:40px}.public-tabulation>.tabulation-rule-note{margin-top:25px}
+@media(max-width:850px){.tabulation-management-grid,.judge-roster{grid-template-columns:1fr}.tabulation-results-heading{align-items:flex-start}}
+@media(max-width:600px){.tabulation-overview,.tabulation-section-heading,.tabulation-results-heading{align-items:flex-start;flex-direction:column}.tabulation-stat{text-align:left}.tabulation-rubric-row{grid-template-columns:minmax(0,1fr) 90px}.judge-person{flex-wrap:wrap}.judge-person .button{width:100%;justify-content:center}.judge-detail-heading h1{font-size:50px}.judge-detail-heading img{width:78px;height:95px}.judge-criterion input{width:85px}.judge-category{padding:16px}}
