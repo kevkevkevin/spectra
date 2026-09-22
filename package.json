@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/ticketing.test.mjs tests/ticket-email.test.cjs tests/ticket-status.test.cjs tests/scanner.test.cjs"
+    "test": "node --test tests/ticketing.test.mjs tests/ticket-email.test.cjs tests/ticket-status.test.cjs tests/scanner.test.cjs tests/tabulation-rounds.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
