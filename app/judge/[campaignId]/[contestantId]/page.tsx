@@ -25,7 +25,7 @@ export default async function ScoreContestant({params,searchParams}:{params:Prom
  const [campaignResult,personResult,roundResult,entryResult,criteriaResult,cardResult]=await Promise.all([
   db.from('voting_campaigns').select('id,title,active').eq('id',campaignId).maybeSingle(),
   db.from('contestants').select('id,name,number,image_url,active').eq('id',contestantId).eq('campaign_id',campaignId).maybeSingle(),
-  db.from('contest_scoring_rounds').select('scoring_open,opened_at').eq('campaign_id',campaignId).eq('round',round).maybeSingle(),
+  db.from('contest_scoring_rounds').select('scoring_open,opened_at,roster_initialized').eq('campaign_id',campaignId).eq('round',round).maybeSingle(),
   db.from('contest_round_entries').select('contestant_id').eq('campaign_id',campaignId).eq('round',round).eq('contestant_id',contestantId).maybeSingle(),
   db.from('contest_scoring_criteria').select('*').eq('campaign_id',campaignId).order('position'),
   db.from('contest_scorecards').select('id,submitted_at').eq('campaign_id',campaignId).eq('contestant_id',contestantId).eq('judge_id',user.id).eq('round',round).maybeSingle(),
@@ -41,7 +41,7 @@ export default async function ScoreContestant({params,searchParams}:{params:Prom
   <div className="judge-detail-heading">{person.image_url&&<img src={person.image_url} alt=""/>}<div><h1>{person.name}</h1><p>{cardResult.data?'Your scorecard was saved. You can revise it while scoring is open.':'Score every criterion before submitting.'}</p></div></div>
   {query.error&&<p className="notice" role="alert">{messages[query.error]??messages.save}</p>}
   {criteriaResult.error||roundResult.error||entryResult.error||criteria.length!==7?<p className="notice" role="alert">{messages.setup}</p>:
-   round!=='elimination'&&!entryResult.data?<p className="notice">This contender has not advanced to {roundDetails[round].label}.</p>:
+   !entryResult.data?<p className="notice">This contestant is not included in the {roundDetails[round].label} roster.</p>:
    !roundResult.data?.scoring_open?<p className="notice">{roundDetails[round].label} scoring is closed. Your submitted scores remain saved.</p>:
    <JudgeScoreForm campaignId={campaignId} contestantId={contestantId} round={round} criteria={criteria} previous={previous}/>}
  </main></>;

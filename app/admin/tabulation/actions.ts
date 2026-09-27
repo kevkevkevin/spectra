@@ -23,7 +23,7 @@ export async function saveRoundSettings(form:FormData){
  });
  if(error){
   const reason=error.message.includes('Close the current')?'other_open':error.message.includes('previous round')?'previous':
-   error.message.includes('advancing contenders')?'entries':error.message.includes('inactive')?'inactive':'save';
+   error.message.includes('round contestants')||error.message.includes('advancing contenders')?'entries':error.message.includes('inactive')?'inactive':'save';
   roundDestination(campaign,round,reason);
  }
  revalidatePath('/judge');revalidatePath('/admin/tabulation');revalidatePath('/contest/results');
@@ -32,11 +32,11 @@ export async function saveRoundSettings(form:FormData){
 
 export async function saveRoundEntries(form:FormData){
  const {db}=await admin();const campaign=String(form.get('campaign_id')??'');const round=String(form.get('round')??'');
- if(!UUID.test(campaign)||!isScoringRound(round)||round==='elimination')roundDestination(campaign,round,'invalid');
+ if(!UUID.test(campaign)||!isScoringRound(round))roundDestination(campaign,round,'invalid');
  const contenders=form.getAll('contestant_id').map(String);
  if(contenders.length>10000||new Set(contenders).size!==contenders.length||contenders.some(id=>!UUID.test(id)))roundDestination(campaign,round,'invalid');
  const {error}=await db.rpc('set_contest_round_entries',{p_campaign_id:campaign,p_round:round,p_contestants:contenders});
- if(error)roundDestination(campaign,round,error.message.includes('locked')?'entries_locked':error.message.includes('previous round')?'unscored':'save');
+ if(error)roundDestination(campaign,round,error.message.includes('locked')?'entries_locked':'save');
  revalidatePath('/judge');revalidatePath('/admin/tabulation');revalidatePath('/contest/results');
  redirect(`/admin/tabulation?campaign=${campaign}&round=${round}&saved=entries`);
 }

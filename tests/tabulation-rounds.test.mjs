@@ -7,6 +7,8 @@ const ids={admin:'20000000-0000-4000-8000-000000000003',judge:'20000000-0000-400
 const campaign='30000000-0000-4000-8000-000000000001';
 const first='31000000-0000-4000-8000-000000000001';
 const second='31000000-0000-4000-8000-000000000002';
+const freshCampaign='30000000-0000-4000-8000-000000000002';
+const freshContestant='31000000-0000-4000-8000-000000000003';
 
 test('scoring rounds preserve elimination cards and isolate later rounds',async()=>{
  const db=new PGlite();
@@ -59,19 +61,22 @@ test('scoring rounds preserve elimination cards and isolate later rounds',async(
 
   await db.exec(await migration('008_contest_scoring_rounds.sql'));
   await db.exec(await migration('008_contest_scoring_rounds.sql'));
+  await db.exec(await migration('009_round_rosters_and_lowest_five.sql'));
+  await db.exec(await migration('009_round_rosters_and_lowest_five.sql'));
   assert.deepEqual((await db.query('select round,scoring_open from public.contest_scoring_rounds where campaign_id=$1 order by round',[campaign])).rows,
    [{round:'elimination',scoring_open:true},{round:'grand_final',scoring_open:false},{round:'semi_final',scoring_open:false}]);
   assert.deepEqual((await db.query('select id,round from public.contest_scorecards')).rows,[{id:oldCard,round:'elimination'}]);
+  assert.equal((await db.query("select count(*) from public.contest_round_entries where campaign_id=$1 and round='elimination'",[campaign])).rows[0].count,2);
   await assert.rejects(()=>asUser('judge','select public.submit_contest_scorecard($1,$2,$3,$4::jsonb)',[campaign,first,'semi_final',scores(9)]),/Scoring is closed/);
   await assert.rejects(()=>asUser('guest','select public.set_contest_round_state($1,$2,true,false)',[campaign,'semi_final']),/Admin access required/);
   await assert.rejects(()=>asUser('admin','select public.set_contest_round_state($1,$2,true,false)',[campaign,'semi_final']),/Close the current round/);
 
   await asUser('admin','select public.set_contest_round_state($1,$2,false,false)',[campaign,'elimination']);
-  await assert.rejects(()=>asUser('admin','select public.set_contest_round_state($1,$2,true,false)',[campaign,'semi_final']),/Select advancing contenders/);
-  await assert.rejects(()=>asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[campaign,'semi_final',JSON.stringify([second])]),/previous round/);
+  await assert.rejects(()=>asUser('admin','select public.set_contest_round_state($1,$2,true,false)',[campaign,'semi_final']),/Select round contestants/);
+  await asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[campaign,'semi_final',JSON.stringify([second])]);
   await asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[campaign,'semi_final',JSON.stringify([first])]);
   await asUser('admin','select public.set_contest_round_state($1,$2,true,false)',[campaign,'semi_final']);
-  await assert.rejects(()=>asUser('judge','select public.submit_contest_scorecard($1,$2,$3,$4::jsonb)',[campaign,second,'semi_final',scores(9)]),/has not advanced/);
+  await assert.rejects(()=>asUser('judge','select public.submit_contest_scorecard($1,$2,$3,$4::jsonb)',[campaign,second,'semi_final',scores(9)]),/not in this round/);
   await assert.rejects(()=>asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[campaign,'semi_final',JSON.stringify([first,second])]),/locked/);
   const semiCard=(await asUser('judge','select public.submit_contest_scorecard($1,$2,$3,$4::jsonb) as id',[campaign,first,'semi_final',scores(9)])).rows[0].id;
   assert.notEqual(semiCard,oldCard);
@@ -80,11 +85,22 @@ test('scoring rounds preserve elimination cards and isolate later rounds',async(
   assert.equal(elimination.find(item=>item.contestant_id===first).total_points,'80.00');
   assert.equal(semi.find(item=>item.contestant_id===first).total_points,'90.00');
   assert.equal(semi.length,1);
+  assert.equal((await asUser('judge','select * from public.contest_judge_leaderboard($1,$2)',[campaign,'semi_final'])).rows.length,1);
   assert.equal((await asAnon('select * from public.contest_judge_leaderboard($1,$2)',[campaign,'semi_final'])).rows.length,0);
   await asUser('admin','select public.set_contest_round_state($1,$2,false,true)',[campaign,'semi_final']);
   assert.equal((await asAnon('select * from public.contest_judge_leaderboard($1,$2)',[campaign,'semi_final'])).rows.length,1);
   await asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[campaign,'grand_final',JSON.stringify([first])]);
   await asUser('admin','select public.set_contest_round_state($1,$2,true,false)',[campaign,'grand_final']);
+  await db.query('insert into public.voting_campaigns(id) values($1)',[freshCampaign]);
+  await db.query('insert into public.contestants(id,campaign_id,number,name) values($1,$2,1,$3)',[freshContestant,freshCampaign,'Imported elimination singer']);
+  assert.equal((await db.query('select count(*) from public.contest_round_entries where campaign_id=$1',[freshCampaign])).rows[0].count,0);
+  await asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[freshCampaign,'elimination',JSON.stringify([freshContestant])]);
+  await asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[freshCampaign,'elimination','[]']);
+  await db.exec(await migration('009_round_rosters_and_lowest_five.sql'));
+  assert.equal((await db.query('select count(*) from public.contest_round_entries where campaign_id=$1',[freshCampaign])).rows[0].count,0);
+  await asUser('admin','select public.set_contest_round_entries($1,$2,$3::jsonb)',[freshCampaign,'elimination',JSON.stringify([freshContestant])]);
+  await asUser('admin','select public.set_contest_round_state($1,$2,true,false)',[freshCampaign,'elimination']);
+  assert.equal((await asUser('admin','select * from public.contest_judge_leaderboard($1,$2)',[freshCampaign,'elimination'])).rows.length,1);
   assert.equal((await db.query('select count(*) from public.contest_scorecards')).rows[0].count,2);
  }finally{await db.close();}
 });
